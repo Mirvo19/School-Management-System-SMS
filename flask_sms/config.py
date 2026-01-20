@@ -67,8 +67,14 @@ class TestingConfig(Config):
 class ProductionConfig(Config):
     """Production configuration"""
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+    
+    uri = os.environ.get('DATABASE_URL')
+    if uri and uri.startswith('postgres://'):
+        uri = uri.replace('postgres://', 'postgresql://', 1)
+        
+    SQLALCHEMY_DATABASE_URI = uri or \
         'sqlite:///' + os.path.join(basedir, 'sms.db')
+        
     SESSION_COOKIE_SECURE = True
 
 
