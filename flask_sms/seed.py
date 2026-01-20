@@ -12,7 +12,8 @@ from datetime import datetime
 
 def seed_database():
     """Seed the database with initial data"""
-    app = create_app()
+    config_name = 'production'  # Use production config on Render
+    app = create_app(config_name)
     with app.app_context():
         print("Starting database seeding...")
         
