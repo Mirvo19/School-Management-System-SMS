@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Report Card - {{ get_school_name() }}{% endblock %}
+
+{% block content %}
+<div
+    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom d-print-none">
+    <h1 class="h2">Student Report Card</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button type="button" class="btn btn-sm btn-outline-primary me-2" onclick="window.print()">
+            <i class="fas fa-print"></i> Print Report Card
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.history.back()">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
+    </div>
+</div>
+
+<div class="card border border-2 shadow-sm" style="max-width: 900px; margin: 0 auto;">
+    <div class="card-body p-5">
+
+        <!-- Header -->
+        <div class="text-center mb-5 border-bottom pb-3">
+            <h2 class="fw-bold mb-1">{{ get_school_name() }}</h2>
+            <p class="text-muted mb-0">Student Report Card</p>
+            <p class="mb-0"><strong>Exam:</strong> {{ exam.name }} ({{ exam.year }})</p>
+        </div>
+
+        <!-- Student Info -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <table class="table table-borderless table-sm">
+                    <tr>
+                        <th width="120">Student Name:</th>
+                        <td>{{ student.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Adm. Number:</th>
+                        <td>{{ student_record.adm_no }}</td>
+                    </tr>
+                    <tr>
+                        <th>Class:</th>
+                        <td>{{ my_class.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Session:</th>
+                        <td>{{ student_record.session }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-4 text-center">
+                {% if student.photo %}
+                <img src="{{ url_for('static', filename='uploads/' + student.photo) }}" alt="Photo"
+                    class="img-thumbnail" width="120">
+                {% else %}
+                <div class="border d-flex align-items-center justify-content-center bg-light"
+                    style="width: 120px; height: 140px; margin: 0 auto;">
+                    <span class="text-muted">Photo</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Marks Table -->
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered text-center align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-start">Subject</th>
+                        <th width="100">Internal (25)</th>
+                        <th width="100">Theory (75)</th>
+                        <th width="100">Total (100)</th>
+                        <th width="80">Grade</th>
+                        <th>Remark</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in marks_data %}
+                    <tr>
+                        <td class="text-start fw-bold">{{ m.subject.name }}</td>
+                        <td>{{ m.t1 }}</td>
+                        <td>{{ m.exams }}</td>
+                        <td class="fw-bold">{{ m.total }}</td>
+                        <td
+                            class="bg-{{ 'success' if m.grade == 'A' else 'secondary' if m.grade == 'B' else 'info' if m.grade == 'C' else 'light' }} text-{{ 'white' if m.grade in ['A','B','C'] else 'dark' }}">
+                            {{ m.grade }}</td>
+                        <td class="text-start text-muted fst-italic"><small>{{ m.remark }}</small></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Summary -->
+        <div class="row mb-5">
+            <div class="col-6">
+                <div class="card bg-light border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">Performance Summary</h5>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Score:</span>
+                            <span class="fw-bold">{{ total_score }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Percentage:</span>
+                            <span class="fw-bold">{{ "%.1f"|format(percentage) }}%</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>GPA:</span>
+                            <span class="fw-bold">{{ "%.2f"|format(gpa) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Overall Grade:</span>
+                            <span class="badge bg-primary">{{ overall_grade }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <!-- Grading System Legend (Optional) -->
+                <div class="small text-muted">
+                    <p class="mb-1"><strong>Grading Scale:</strong></p>
+                    <ul class="list-inline mb-0">
+                        <li class="list-inline-item">A: 90-100</li>
+                        <li class="list-inline-item">B: 80-89</li>
+                        <li class="list-inline-item">C: 70-79</li>
+                        <li class="list-inline-item">D: 60-69</li>
+                        <li class="list-inline-item">E: 50-59</li>
+                        <li class="list-inline-item">F: 0-49</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signatures -->
+        <div class="row mt-5 pt-5">
+            <div class="col-4 text-center">
+                <div class="border-top border-dark w-75 mx-auto pt-2">Class Teacher</div>
+            </div>
+            <div class="col-4 text-center">
+                <div class="border-top border-dark w-75 mx-auto pt-2">Principal</div>
+            </div>
+            <div class="col-4 text-center">
+                <div class="border-top border-dark w-75 mx-auto pt-2">Parent/Guardian</div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5 text-muted small">
+            Generated on {{ now() }}
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .d-print-none {
+            display: none !important;
+        }
+
+        body {
+            background: white !important;
+            -webkit-print-color-adjust: exact !important;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .badge {
+            border: 1px solid #000;
+            color: #000 !important;
+        }
+
+        .bg-success {
+            background-color: #d4edda !important;
+        }
+
+        /* Restore for print if needed or keep BW */
+    }
+</style>
+{% endblock %}

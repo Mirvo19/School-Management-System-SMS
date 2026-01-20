@@ -66,6 +66,9 @@
                     <button type="button" class="btn btn-primary btn-lg shadow-sm" onclick="goToManage()">
                         Manage Marks <i class="fas fa-arrow-right ms-2"></i>
                     </button>
+                    <button type="button" class="btn btn-outline-success btn-lg shadow-sm" onclick="goToResults()">
+                        <i class="fas fa-chart-bar me-2"></i> View Class Results
+                    </button>
                 </div>
             </div>
         </div>
@@ -73,16 +76,30 @@
 </div>
 
 <script>
-    function goToManage() {
+    function getSelection() {
         const examId = document.getElementById('exam_id').value;
         const subjectId = document.getElementById('subject_id').value;
         const classId = document.getElementById('class_id').value;
+        return { examId, subjectId, classId };
+    }
+
+    function goToManage() {
+        const { examId, subjectId, classId } = getSelection();
 
         if (examId && subjectId && classId) {
             window.location.href = `/marks/manage/${examId}/${subjectId}/${classId}`;
         } else {
-            // Use a nicer alert if possible, or standard fallback
             alert('Please select Exam, Subject, and Class to proceed.');
+        }
+    }
+
+    function goToResults() {
+        const { examId, classId } = getSelection();
+        // Subject is not strictly needed for class results overview, but we need Exam and Class
+        if (examId && classId) {
+            window.location.href = `/marks/results/${examId}/${classId}`;
+        } else {
+            alert('Please select Exam and Class to view results.');
         }
     }
 </script>

@@ -42,11 +42,9 @@
                     <thead>
                         <tr>
                             <th class="text-start">Student</th>
-                            <th width="100">Test 1 (20)</th>
-                            <th width="100">Test 2 (20)</th>
-                            <th width="100">Test 3 (20)</th>
-                            <th width="100">Exam (40/60)</th>
-                            <th width="100">Total</th>
+                            <th width="150">Internal (25)</th>
+                            <th width="150">Theory (75)</th>
+                            <th width="100">Total (100)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -59,19 +57,11 @@
                             </td>
                             <td>
                                 <input type="number" class="form-control" name="t1_{{ student.id }}"
-                                    value="{{ mark.t1 if mark else '' }}" min="0" max="20">
-                            </td>
-                            <td>
-                                <input type="number" class="form-control" name="t2_{{ student.id }}"
-                                    value="{{ mark.t2 if mark else '' }}" min="0" max="20">
-                            </td>
-                            <td>
-                                <input type="number" class="form-control" name="t3_{{ student.id }}"
-                                    value="{{ mark.t3 if mark else '' }}" min="0" max="20">
+                                    value="{{ mark.t1 if mark else '' }}" min="0" max="25" placeholder="Max 25">
                             </td>
                             <td>
                                 <input type="number" class="form-control" name="exams_{{ student.id }}"
-                                    value="{{ mark.exams if mark else '' }}" min="0" max="100">
+                                    value="{{ mark.exams if mark else '' }}" min="0" max="75" placeholder="Max 75">
                             </td>
                             <td>
                                 <span class="fw-bold">{{ mark.total if mark else '-' }}</span>

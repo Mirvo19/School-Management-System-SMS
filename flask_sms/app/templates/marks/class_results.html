@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Class Results - {{ get_school_name() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Class Results Report</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button type="button" class="btn btn-sm btn-outline-primary me-2" onclick="window.print()">
+            <i class="fas fa-print"></i> Print Report
+        </button>
+        <a href="{{ url_for('marks.index') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="text-center mb-4">
+    <h3>{{ get_school_name() }}</h3>
+    <h5>Class Result Report: {{ my_class.name }} - {{ exam.name }} ({{ exam.year }})</h5>
+</div>
+
+<div class="card mb-4 border-0 shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped text-center align-middle caption-top">
+                <caption>Student Performance Report</caption>
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-start">Student Name</th>
+                        {% for subject in subjects %}
+                        <th>{{ subject.name[:3] }}</th>
+                        {% endfor %}
+                        <th>Total</th>
+                        <th>%</th>
+                        <th>Grade</th>
+                        <th>GPA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in results %}
+                    <tr>
+                        <td class="text-start fw-bold">
+                            <a href="{{ url_for('marks.student_result', exam_id=exam.id, student_id=r['student'].user_id) }}"
+                                class="text-decoration-none text-dark" title="View Report Card">
+                                {{ r['student'].user.name }} <i
+                                    class="fas fa-external-link-alt fa-xs text-muted ms-1"></i>
+                            </a>
+                        </td>
+                        {% for subject in subjects %}
+                        <td>{{ r['marks'].get(subject.id, '-') }}</td>
+                        {% endfor %}
+                        <td class="fw-bold">{{ r['total_score'] }}</td>
+                        <td>{{ "%.1f"|format(r['percentage']) }}</td>
+                        <td><span
+                                class="badge bg-{{ 'success' if r['grade'] == 'A' else 'primary' if r['grade'] == 'B' else 'info' if r['grade'] == 'C' else 'warning' if r['grade'] == 'D' else 'danger' }}">{{
+                                r['grade'] }}</span></td>
+                        <td>{{ r['gpa'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-trophy me-2"></i> Class Statistics</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Class Topper</span>
+                        <span class="text-success fw-bold">{{ topper['student'].user.name }} ({{
+                            "%.1f"|format(topper['percentage']) }}%)</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Class Average</span>
+                        <span class="badge bg-secondary rounded-pill">{{ "%.1f"|format(class_avg) }}%</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-star me-2"></i> Subject High Scores</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-borderless">
+                    <tbody>
+                        {% for subject in subjects %}
+                        {% set high = subject_highs.get(subject.id) %}
+                        {% if high and high.scorer %}
+                        <tr>
+                            <td class="fw-bold">{{ subject.name }}</td>
+                            <td>{{ high.score }}</td>
+                            <td class="text-muted"><small>({{ high.scorer }})</small></td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+
+        .btn-toolbar,
+        header,
+        footer {
+            display: none !important;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        body {
+            background: white !important;
+        }
+    }
+</style>
+{% endblock %}
