@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}My Dashboard - {{ get_school_name() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-4 mb-4 border-bottom">
+    <h1 class="h2">Student Portal</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-transparent text-center pt-4 border-bottom-0">
+                {% if student_record %}
+                <div class="rounded-circle bg-soft-primary d-flex align-items-center justify-content-center mx-auto text-primary mb-3 shadow-sm"
+                    style="width: 100px; height: 100px; font-size: 3rem;">
+                    {{ user.name[0]|upper }}
+                </div>
+                <h5 class="fw-bold mb-1">{{ user.name }}</h5>
+                <p class="text-muted mb-0">{{ student_record.adm_no }}</p>
+                {% else %}
+                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto text-white mb-3"
+                    style="width: 100px; height: 100px; font-size: 3rem;">
+                    ?
+                </div>
+                <h5>Unknown</h5>
+                {% endif %}
+            </div>
+            <div class="card-body text-center pt-0">
+                {% if student_record %}
+                <div class="badge bg-soft-info text-info mb-2 fs-6 px-3 py-2 rounded-pill">
+                    {{ student_record.my_class.name }}
+                </div>
+                {% else %}
+                <p>Student record not found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center p-5">
+                        <div class="stat-icon mx-auto mb-3"
+                            style="width: 80px; height: 80px; font-size: 2.5rem; background-color: rgba(252, 163, 17, 0.1); color: var(--warning-color);">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h4 class="mb-2">My Results</h4>
+                        <p class="text-muted mb-4">Check your academic performance and exam history.</p>
+                        <button class="btn btn-warning text-white px-4" onclick="alert('Results view coming soon')">
+                            Check Results
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center p-5">
+                        <div class="stat-icon mx-auto mb-3"
+                            style="width: 80px; height: 80px; font-size: 2.5rem; background-color: rgba(76, 201, 240, 0.1); color: var(--success-color);">
+                            <i class="fas fa-file-invoice py-0"></i>
+                        </div>
+                        <h4 class="mb-2">School Fees</h4>
+                        <p class="text-muted mb-4">View your current fee status and invoices.</p>
+                        {% if student_record %}
+                        <a href="{{ url_for('payments.invoice', student_id=student_record.id) }}"
+                            class="btn btn-info text-white px-4">View Payments</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

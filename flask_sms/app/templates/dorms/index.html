@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Dorms - {{ get_school_name() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-4 mb-4 border-bottom">
+    <h1 class="h2">Dormitories</h1>
+    {% if current_user.is_admin() %}
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('dorms.create') }}" class="btn btn-primary d-flex align-items-center">
+            <i class="fas fa-plus me-2"></i> Add Dorm
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row">
+    {% for dorm in dorms %}
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm h-100 hover-shadow transition-all">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-shape icon-shape-primary rounded-circle me-3">
+                        <i class="fas fa-bed"></i>
+                    </div>
+                    <h5 class="card-title mb-0 fw-bold text-dark">{{ dorm.name }}</h5>
+                </div>
+                <p class="card-text text-muted">{{ dorm.description or 'No description provided.' }}</p>
+            </div>
+            <div class="card-footer bg-white border-top-0 pt-0">
+                <small class="text-muted"><i class="far fa-calendar-alt me-1"></i> Added: {{
+                    dorm.created_at.strftime('%Y-%m-%d') }}</small>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="p-5 text-center bg-white rounded shadow-sm">
+            <div class="mb-3 text-muted">
+                <i class="fas fa-home fa-3x"></i>
+            </div>
+            <h5>No dormitories found</h5>
+            <p class="text-muted">Manage student accommodation here.</p>
+            {% if current_user.is_admin() %}
+            <a href="{{ url_for('dorms.create') }}" class="btn btn-primary mt-2">
+                <i class="fas fa-plus me-2"></i> Add Dorm
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Invoice - {{ get_school_name() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Payment Invoice: {{ student_record.user.name }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+            <i class="fas fa-print"></i> Print
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                Payment History
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-6">
+                        <strong>Student:</strong> {{ student_record.user.name }}<br>
+                        <strong>Adm No:</strong> {{ student_record.adm_no }}<br>
+                        <strong>Class:</strong> {{ student_record.my_class.name }}
+                    </div>
+                    <div class="col-sm-6 text-end">
+                        <strong>Date:</strong> {{ current_time_str() }}
+                        <!-- Assuming a helper exists, else standard JS -->
+                    </div>
+                </div>
+
+                {% if payment_records %}
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Ref No</th>
+                                <th>Payment Title</th>
+                                <th>Amount Paid</th>
+                                <th>Balance</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in invoice_items %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ item.title }}</td>
+                                <td>{{ "%.2f"|format(item.amount) }}</td>
+                                <td>{{ "%.2f"|format(item.amount - (item.amount_paid if item.paid else 0)) }}</td>
+                                <td>{{ current_time_str() if item.paid else '-' }}</td>
+                                <td>
+                                    {% if item.paid %}
+                                    <span class="badge bg-success">Paid</span>
+                                    {% else %}
+                                    <span class="badge bg-warning text-dark">Unpaid</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if not item.paid %}
+                                    <form action="{{ url_for('payments.pay', student_id=student_record.id, payment_id=item.id) }}" method="POST" style="display:inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                        <button type="submit" class="btn btn-sm btn-primary">Pay</button>
+                                    </form>
+                                    {% else %}
+                                    <button class="btn btn-sm btn-secondary" disabled>Paid</button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    No payment records found for this student.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

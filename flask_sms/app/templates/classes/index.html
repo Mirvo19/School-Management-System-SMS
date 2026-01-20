@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Classes - {{ get_school_name() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-4 mb-4 border-bottom">
+    <h1 class="h2">Classes</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('classes.create') }}" class="btn btn-primary d-flex align-items-center">
+            <i class="fas fa-plus me-2"></i> Add New Class
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        {% if classes %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="border-top-0">Class Name</th>
+                        <th class="border-top-0">Type</th>
+                        <th class="border-top-0">Created At</th>
+                        <th class="border-top-0 text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for my_class in classes %}
+                    <tr>
+                        <td class="fw-medium">{{ my_class.name }}</td>
+                        <td>
+                            {% if my_class.class_type_id %}
+                            <span class="badge bg-soft-secondary text-secondary rounded-pill px-3">Type {{
+                                my_class.class_type_id }}</span>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ my_class.created_at.strftime('%Y-%m-%d') if my_class.created_at else '-' }}</td>
+                        <td class="text-end">
+                            <div class="btn-group">
+                                <a href="{{ url_for('classes.show', id=my_class.id) }}"
+                                    class="btn btn-sm btn-light text-primary" title="View details and sections">
+                                    <i class="fas fa-eye me-1"></i> View & Sections
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-5 text-center">
+            <div class="mb-3 text-muted">
+                <i class="fas fa-school fa-3x"></i>
+            </div>
+            <h5>No classes found</h5>
+            <p class="text-muted">Get started by creating your first class.</p>
+            <a href="{{ url_for('classes.create') }}" class="btn btn-primary mt-2">
+                <i class="fas fa-plus me-2"></i> Create Class
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Parent Portal - {{ get_school_name() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Parent Dashboard</h1>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                My Children/Wards
+            </div>
+            <div class="card-body">
+                {% if children %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Admission No</th>
+                                <th>Class</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for child in children %}
+                            <tr>
+                                <td>{{ child.user.name }}</td>
+                                <td>{{ child.adm_no }}</td>
+                                <td>{{ child.my_class.name }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('payments.invoice', student_id=child.id) }}"
+                                            class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-file-invoice-dollar"></i> Fees
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-primary"
+                                            onclick="alert('Result checking feature coming soon')">
+                                            <i class="fas fa-chart-bar"></i> Results
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    No children linked to your account. Please contact the school administrator.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

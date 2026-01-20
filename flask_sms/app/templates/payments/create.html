@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Create Payment - {{ get_school_name() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Create Payment Definition</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('payments.index') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Payment Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required
+                            placeholder="e.g. School Fees">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount</label>
+                        <input type="number" class="form-control" id="amount" name="amount" step="0.01" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="my_class_id" class="form-label">Class (Optional)</label>
+                        <select class="form-select" id="my_class_id" name="my_class_id">
+                            <option value="">All Classes</option>
+                            {% for c in classes %}
+                            <option value="{{ c.id }}">{{ c.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Leave blank if this payment applies to all.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="year" class="form-label">Year/Session</label>
+                        <input type="text" class="form-control" id="year" name="year" required
+                            placeholder="e.g. 2023/2024">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Create Payment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

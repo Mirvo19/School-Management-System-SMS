@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Student Profile - {{ get_school_name() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Student Profile: {{ student_record.user.name }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('students.index') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    {% if student_record.user.photo %}
+                    <img src="{{ url_for('static', filename='uploads/' + student_record.user.photo) }}"
+                        class="rounded-circle img-thumbnail" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto text-white"
+                        style="width: 150px; height: 150px; font-size: 4rem;">
+                        {{ student_record.user.name[0]|upper }}
+                    </div>
+                    {% endif %}
+                </div>
+                <h5 class="card-title">{{ student_record.user.name }}</h5>
+                <p class="text-muted">Student</p>
+                <p><strong>Adm No:</strong> {{ student_record.adm_no }}</p>
+
+                {% if current_user.is_admin() %}
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('students.edit', id=student_record.id) }}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if current_user.is_admin() %}
+            <div class="card-footer bg-white border-top-0">
+                <h6 class="border-bottom pb-2">Actions</h6>
+                <div class="d-grid gap-2">
+                    <form action="{{ url_for('students.reset_pass', st_id=student_record.id) }}" method="POST"
+                        onsubmit="return confirm('Reset password to Admission Number?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-secondary w-100 text-start">
+                            <i class="fas fa-key me-2"></i> Reset Password
+                        </button>
+                    </form>
+
+                    <form action="{{ url_for('students.delete', id=student_record.id) }}" method="POST"
+                        onsubmit="return confirm('Are you sure? This delete both student record and user account.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger w-100 text-start">
+                            <i class="fas fa-trash me-2"></i> Delete Student
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Academic Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">Class</div>
+                    <div class="col-sm-9">{{ student_record.my_class.name }} {{ student_record.section.name }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">Admission No</div>
+                    <div class="col-sm-9">{{ student_record.adm_no }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">Year Admitted</div>
+                    <div class="col-sm-9">{{ student_record.year_admitted }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">Session</div>
+                    <div class="col-sm-9">{{ student_record.session }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">House</div>
+                    <div class="col-sm-9">{{ student_record.house or '-' }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Personal Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">Email</div>
+                    <div class="col-sm-9">{{ student_record.user.email }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">Phone</div>
+                    <div class="col-sm-9">{{ student_record.user.phone or '-' }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">Date of Birth</div>
+                    <div class="col-sm-9">{{ student_record.user.dob.strftime('%d %B, %Y') if student_record.user.dob
+                        else '-' }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">Gender</div>
+                    <div class="col-sm-9">{{ student_record.user.gender|title }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">Address</div>
+                    <div class="col-sm-9">{{ student_record.user.address or '-' }}</div>
+                </div>
+
+                {% if student_record.parent %}
+                <hr>
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold">Guardian</div>
+                    <div class="col-sm-9">
+                        <a href="{{ url_for('users.show', id=student_record.parent.user.id) }}">
+                            {{ student_record.parent.user.name }}
+                        </a>
+                        <br>
+                        <small class="text-muted">{{ student_record.parent.user.phone }}</small>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Promotion History - {{ get_school_name() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Promotion History</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('students.promotion') }}" class="btn btn-sm btn-outline-success">
+            <i class="fas fa-plus"></i> New Promotion
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if promotions %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Student</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Session Change</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in promotions %}
+                    <tr>
+                        <td>{{ p.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ p.student.user.name }}</td>
+                        <td>{{ p.prev_class.name }}</td>
+                        <td>{{ p.new_class.name }}</td>
+                        <td>{{ p.from_session }} &rarr; {{ p.to_session }}</td>
+                        <td>
+                            <form action="{{ url_for('students.promotion_reset', pid=p.id) }}" method="POST"
+                                onsubmit="return confirm('Revert this promotion? Student will return to previous class.');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-undo"></i> Revert
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No promotion records found.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

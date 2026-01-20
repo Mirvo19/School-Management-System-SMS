@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - {{ get_school_name() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-4 mb-4 border-bottom">
+    <h1 class="h2">Dashboard</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Students -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body stat-card">
+                <div class="stat-icon bg-soft-primary">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <div>
+                    <div class="text-xs font-weight-bold text-uppercase mb-1 text-muted">Total Students</div>
+                    <div class="h3 mb-0 font-weight-bold text-primary">{{ total_students }}</div>
+                </div>
+            </div>
+            <a href="{{ url_for('students.index') }}"
+                class="card-footer bg-transparent border-top-0 d-flex align-items-center justify-content-between small text-primary">
+                <span class="fw-bold">View Details</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Teachers -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body stat-card">
+                <div class="stat-icon" style="background-color: rgba(63, 55, 201, 0.1); color: var(--secondary-color);">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <div>
+                    <div class="text-xs font-weight-bold text-uppercase mb-1 text-muted">Teachers</div>
+                    <div class="h3 mb-0 font-weight-bold" style="color: var(--secondary-color);">{{ total_teachers }}
+                    </div>
+                </div>
+            </div>
+            <a href="{{ url_for('users.index', type='teacher') }}"
+                class="card-footer bg-transparent border-top-0 d-flex align-items-center justify-content-between small text-primary">
+                <span class="fw-bold">View Details</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Parents -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body stat-card">
+                <div class="stat-icon" style="background-color: rgba(72, 149, 239, 0.1); color: var(--accent-color);">
+                    <i class="fas fa-user-friends"></i>
+                </div>
+                <div>
+                    <div class="text-xs font-weight-bold text-uppercase mb-1 text-muted">Parents</div>
+                    <div class="h3 mb-0 font-weight-bold" style="color: var(--accent-color);">{{ total_parents }}</div>
+                </div>
+            </div>
+            <a href="{{ url_for('users.index', type='parent') }}"
+                class="card-footer bg-transparent border-top-0 d-flex align-items-center justify-content-between small text-primary">
+                <span class="fw-bold">View Details</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Classes -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-body stat-card">
+                <div class="stat-icon" style="background-color: rgba(255, 166, 0, 0.1); color: var(--warning-color);">
+                    <i class="fas fa-school"></i>
+                </div>
+                <div>
+                    <div class="text-xs font-weight-bold text-uppercase mb-1 text-muted">Classes</div>
+                    <div class="h3 mb-0 font-weight-bold" style="color: var(--warning-color);">Manage</div>
+                </div>
+            </div>
+            <a href="{{ url_for('classes.index') }}"
+                class="card-footer bg-transparent border-top-0 d-flex align-items-center justify-content-between small text-primary">
+                <span class="fw-bold">View Details</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+                <h5 class="mb-0 text-primary"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-3">
+                    <a href="{{ url_for('students.create') }}"
+                        class="btn btn-primary d-flex align-items-center justify-content-center py-2">
+                        <i class="fas fa-plus-circle me-2"></i> Admit New Student
+                    </a>
+                    <a href="{{ url_for('users.create', type='teacher') }}"
+                        class="btn btn-outline-secondary d-flex align-items-center justify-content-center py-2">
+                        <i class="fas fa-user-plus me-2"></i> Add Teacher
+                    </a>
+                    <a href="{{ url_for('pins.create') }}"
+                        class="btn btn-outline-info d-flex align-items-center justify-content-center py-2">
+                        <i class="fas fa-key me-2"></i> Generate Access Pins
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

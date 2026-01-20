@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ get_school_name() }}{% endblock %}</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Bootstrap CSS (Keep for Grid/Utilities but override components) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom Sleek CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    {% if current_user.is_authenticated %}
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="{{ url_for('main.dashboard') }}" class="sidebar-brand">
+                <i class="fas fa-graduation-cap me-2"></i> SMS
+            </a>
+        </div>
+        <div class="sidebar-content">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if request.endpoint == 'main.dashboard' }}"
+                        href="{{ url_for('main.dashboard') }}">
+                        <i class="fas fa-home"></i> <span>Dashboard</span>
+                    </a>
+                </li>
+
+                {% if current_user.is_admin() %}
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if 'students.' in request.endpoint }}"
+                        href="{{ url_for('students.index') }}">
+                        <i class="fas fa-user-graduate"></i> <span>Students</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if 'users.' in request.endpoint }}"
+                        href="{{ url_for('users.index') }}">
+                        <i class="fas fa-users"></i> <span>Users</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if 'classes.' in request.endpoint }}"
+                        href="{{ url_for('classes.index') }}">
+                        <i class="fas fa-school"></i> <span>Classes</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if 'subjects.' in request.endpoint }}"
+                        href="{{ url_for('subjects.index') }}">
+                        <i class="fas fa-book"></i> <span>Subjects</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if current_user.is_admin() or current_user.is_teacher() %}
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if 'exams.' in request.endpoint }}"
+                        href="{{ url_for('exams.index') }}">
+                        <i class="fas fa-clipboard-list"></i> <span>Exams</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if 'marks.' in request.endpoint }}"
+                        href="{{ url_for('marks.index') }}">
+                        <i class="fas fa-chart-line"></i> <span>Marks</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if 'timetables.' in request.endpoint }}"
+                        href="{{ url_for('timetables.index') }}">
+                        <i class="fas fa-calendar-alt"></i> <span>Timetables</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if current_user.is_admin() %}
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if 'payments.' in request.endpoint }}"
+                        href="{{ url_for('payments.index') }}">
+                        <i class="fas fa-money-bill"></i> <span>Payments</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if 'dorms.' in request.endpoint }}"
+                        href="{{ url_for('dorms.index') }}">
+                        <i class="fas fa-bed"></i> <span>Dorms</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if 'settings.' in request.endpoint }}"
+                        href="{{ url_for('settings.index') }}">
+                        <i class="fas fa-cog"></i> <span>Settings</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                <li class="nav-item mt-4">
+                    <a class="nav-link {{ 'active' if request.endpoint == 'main.my_account' }}"
+                        href="{{ url_for('main.my_account') }}">
+                        <i class="fas fa-user"></i> <span>My Account</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link logout-link" href="{{ url_for('auth.logout') }}">
+                        <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="{{ 'authenticated' if current_user.is_authenticated else '' }}">
+        <div class="container-fluid">
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="row justify-content-center mb-4">
+                <div class="col-md-8">
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-soft" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

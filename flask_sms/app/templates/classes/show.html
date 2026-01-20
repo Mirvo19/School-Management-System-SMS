@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Class Details - {{ get_school_name() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Class: {{ my_class.name }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('classes.index') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Sections</h5>
+                <a href="{{ url_for('classes.create_section', id=my_class.id) }}" class="btn btn-sm btn-success">
+                    <i class="fas fa-plus"></i> Add Section
+                </a>
+            </div>
+            <div class="card-body">
+                {% if sections %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Section Name</th>
+                                <th>Teacher</th>
+                                <th>Active</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for section in sections %}
+                            <tr>
+                                <td>{{ section.name }}</td>
+                                <td>
+                                    {% if section.teacher %}
+                                    <a href="{{ url_for('users.show', id=section.teacher_id) }}">{{ section.teacher.name
+                                        }}</a>
+                                    {% else %}
+                                    <span class="text-muted">Unassigned</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if section.active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <!-- Add edit/delete section actions here if available -->
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    No sections found for this class. <a
+                        href="{{ url_for('classes.create_section', id=my_class.id) }}">Add one now</a>.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

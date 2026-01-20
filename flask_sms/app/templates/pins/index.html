@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}PINs - {{ get_school_name() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-4 mb-4 border-bottom">
+    <h1 class="h2">Exam PINs</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('pins.create') }}" class="btn btn-primary d-flex align-items-center">
+            <i class="fas fa-plus me-2"></i> Generate PINs
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        {% if pins %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="border-top-0">Code</th>
+                        <th class="border-top-0">Status</th>
+                        <th class="border-top-0">Used By</th>
+                        <th class="border-top-0">Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pin in pins %}
+                    <tr>
+                        <td><code class="text-primary bg-soft-primary px-2 py-1 rounded">{{ pin.code }}</code></td>
+                        <td>
+                            {% if pin.used %}
+                            <span class="badge bg-soft-danger text-danger rounded-pill px-3">Used</span>
+                            {% else %}
+                            <span class="badge bg-soft-success text-success rounded-pill px-3">Available</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if pin.student %}
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-soft-secondary text-secondary d-flex align-items-center justify-content-center me-2"
+                                    style="width: 24px; height: 24px; font-size: 0.7rem;">
+                                    {{ pin.student.user.name[0]|upper }}
+                                </div>
+                                {{ pin.student.user.name }}
+                            </div>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ pin.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-5 text-center">
+            <div class="mb-3 text-muted">
+                <i class="fas fa-key fa-3x"></i>
+            </div>
+            <h5>No PINs generated yet</h5>
+            <p class="text-muted">Generate PINs for students to check results.</p>
+            <a href="{{ url_for('pins.create') }}" class="btn btn-primary mt-2">
+                <i class="fas fa-plus me-2"></i> Generate PINs
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

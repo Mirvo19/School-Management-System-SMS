@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - {{ get_school_name() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-4 mb-4 border-bottom">
+    <h1 class="h2">System Settings</h1>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom py-3">
+        <h5 class="mb-0 text-primary"><i class="fas fa-cogs me-2"></i> Configuration Variables</h5>
+    </div>
+    <div class="card-body p-0">
+        {% if settings %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="border-top-0" style="width: 30%;">Key</th>
+                        <th class="border-top-0">Value / Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in settings %}
+                    <tr>
+                        <td class="fw-medium font-monospace text-primary">{{ s.type }}</td>
+                        <td>{{ s.description }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-5 text-center">
+            <div class="mb-3 text-muted">
+                <i class="fas fa-sliders-h fa-3x"></i>
+            </div>
+            <h5>No settings configured</h5>
+        </div>
+        {% endif %}
+    </div>
+    <div class="card-footer bg-light border-0">
+        <div class="d-flex align-items-center text-muted small">
+            <i class="fas fa-info-circle me-2"></i>
+            To change system settings, please update the database directly or contact the developer.
+        </div>
+    </div>
+</div>
+{% endblock %}

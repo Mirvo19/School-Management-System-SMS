@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Promote Students - {{ get_school_name() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Student Promotion</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('students.promotion_manage') }}" class="btn btn-sm btn-outline-info">
+            <i class="fas fa-history"></i> Promotion History
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Select Classes</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="row">
+                        <div class="col-md-6 border-end">
+                            <h6 class="text-secondary mb-3">Promote From</h6>
+                            <div class="mb-3">
+                                <label for="from_class" class="form-label">Class</label>
+                                <select class="form-select" id="from_class" name="from_class" required
+                                    onchange="loadSections(this.value, 'from_section')">
+                                    <option value="">Select Class</option>
+                                    {% for c in classes %}
+                                    <option value="{{ c.id }}">{{ c.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="from_section" class="form-label">Section</label>
+                                <select class="form-select" id="from_section" name="from_section" required>
+                                    <option value="">Select Section</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="from_session" class="form-label">Current Session</label>
+                                <input type="text" class="form-control" id="from_session" name="from_session"
+                                    placeholder="e.g. 2023/2024" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="text-secondary mb-3">Promote To</h6>
+                            <div class="mb-3">
+                                <label for="to_class" class="form-label">Class</label>
+                                <select class="form-select" id="to_class" name="to_class" required
+                                    onchange="loadSections(this.value, 'to_section')">
+                                    <option value="">Select Class</option>
+                                    {% for c in classes %}
+                                    <option value="{{ c.id }}">{{ c.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="to_section" class="form-label">Section</label>
+                                <select class="form-select" id="to_section" name="to_section" required>
+                                    <option value="">Select Section</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="to_session" class="form-label">Next Session</label>
+                                <input type="text" class="form-control" id="to_session" name="to_session"
+                                    placeholder="e.g. 2024/2025" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-3">
+                        <button type="submit" class="btn btn-success">Manage Promotion</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Simple script to load sections (assuming an API exists or inline data)
+    // For now, since we don't have an API route shown for sections, we might need to rely on backend passing it differently
+    // Or we can just let it fail gracefully if no JS implementation exists yet.
+    // However, to make it work, I'll assume we need to fetch sections.
+    // Since I didn't see a `api/sections/<class_id>` route, I'll check `classes.show` logic.
+    // Wait, `classes.create_section` helps.
+
+    // Actually, looking at `classes.py`, there is no API to get sections by class.
+    // I should probably add one or embed the data.
+    // For now, I will add a placeholder script that warns if it can't load.
+
+    // Better approach: render all sections in a data attribute or JS object and filter them.
+    const allSections = [
+        {% for c in classes %}
+    {% for s in c.sections %}
+    { id: { { s.id } }, name: "{{ s.name }}", class_id: { { c.id } } },
+    {% endfor %}
+    {% endfor %}
+    ];
+
+    function loadSections(classId, targetId) {
+        const target = document.getElementById(targetId);
+        target.innerHTML = '<option value="">Select Section</option>';
+
+        const sections = allSections.filter(s => s.class_id == classId);
+        sections.forEach(s => {
+            const option = document.createElement('option');
+            option.value = s.id;
+            option.textContent = s.name;
+            target.appendChild(option);
+        });
+    }
+</script>
+{% endblock %}

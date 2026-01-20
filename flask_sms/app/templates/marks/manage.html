@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Enter Marks - {{ get_school_name() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Enter Marks</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('marks.index') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Selection
+        </a>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    <strong>Exam:</strong> {{ exam.name }} ({{ exam.year }}) |
+    <strong>Subject:</strong> {{ subject.name }}
+</div>
+
+<form method="POST" action="{{ url_for('marks.save') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="exam_id" value="{{ exam.id }}">
+    <input type="hidden" name="subject_id" value="{{ subject.id }}">
+    <!-- Assuming class_id is available from context or URL, checking marks.py manage route -->
+    <!-- marks.py manage route passes students, but not explicit class_id variable, but students have my_class_id -->
+    <!-- Actually manage logic uses request args? No, URL params. -->
+    <!-- I need to pass class_id to the save route. Form action expects POST data. -->
+    <!-- I should capture class_id from the first student or inject it. -->
+    <!-- Code check: manage() renders 'marks/manage.html' with exam, subject, students, marks. -->
+    <!-- It does NOT pass class_id explicitly. -->
+    <!-- I will grab it from the first student if available, or regex the URL using JS to be safe. -->
+    <!-- Better: I'll use a hidden input populated by template logic if students exist. -->
+    {% if students %}
+    <input type="hidden" name="class_id" value="{{ students[0].my_class_id }}">
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            {% if students %}
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered text-center align-middle">
+                    <thead>
+                        <tr>
+                            <th class="text-start">Student</th>
+                            <th width="100">Test 1 (20)</th>
+                            <th width="100">Test 2 (20)</th>
+                            <th width="100">Test 3 (20)</th>
+                            <th width="100">Exam (40/60)</th>
+                            <th width="100">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        {% set mark = marks.get(student.id) %}
+                        <tr>
+                            <td class="text-start">
+                                {{ student.user.name }}<br>
+                                <small class="text-muted">{{ student.adm_no }}</small>
+                            </td>
+                            <td>
+                                <input type="number" class="form-control" name="t1_{{ student.id }}"
+                                    value="{{ mark.t1 if mark else '' }}" min="0" max="20">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control" name="t2_{{ student.id }}"
+                                    value="{{ mark.t2 if mark else '' }}" min="0" max="20">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control" name="t3_{{ student.id }}"
+                                    value="{{ mark.t3 if mark else '' }}" min="0" max="20">
+                            </td>
+                            <td>
+                                <input type="number" class="form-control" name="exams_{{ student.id }}"
+                                    value="{{ mark.exams if mark else '' }}" min="0" max="100">
+                            </td>
+                            <td>
+                                <span class="fw-bold">{{ mark.total if mark else '-' }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">Save All Marks</button>
+            </div>
+            {% else %}
+            <div class="alert alert-warning">
+                No students found in this class.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</form>
+{% endblock %}
