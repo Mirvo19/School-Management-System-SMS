@@ -9,7 +9,8 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from app import create_app, db
 
-app = create_app()
+config_name = os.getenv('FLASK_CONFIG', 'default')
+app = create_app(config_name)
 
 if __name__ == '__main__':
     with app.app_context():
