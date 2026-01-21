@@ -1,9 +1,10 @@
 import os
 from supabase import create_client, Client
 
-url: str = os.environ.get("SUPABASE_URL")
+url: str = os.environ.get("SUPABASE_URL", "").strip()
 # Prefer ANON key, fallback to generic KEY
-key: str = os.environ.get("SUPABASE_ANON_KEY") or os.environ.get("SUPABASE_KEY")
+key_raw = os.environ.get("SUPABASE_ANON_KEY") or os.environ.get("SUPABASE_KEY")
+key: str = key_raw.strip() if key_raw else None
 
 if not url:
     print("WARNING: SUPABASE_URL not found in environment variables (supabase_db.py)")

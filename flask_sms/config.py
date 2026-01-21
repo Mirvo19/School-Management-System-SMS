@@ -32,8 +32,8 @@ class Config:
     # SQLALCHEMY_RECORD_QUERIES = True
     
     # Supabase Configuration
-    SUPABASE_URL = os.environ.get('SUPABASE_URL')
-    SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
+    SUPABASE_URL = os.environ.get('SUPABASE_URL', '').strip()
+    SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '').strip()
     
     # Session configuration
     PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
