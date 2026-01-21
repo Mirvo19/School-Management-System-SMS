@@ -16,6 +16,13 @@ else:
     
 load_dotenv(env_path)
 print(f"SUPABASE_URL loaded: {'Yes' if os.environ.get('SUPABASE_URL') else 'No'}")
+print(f"SUPABASE_KEY loaded: {'Yes' if os.environ.get('SUPABASE_KEY') else 'No'}")
+print(f"SUPABASE_ANON_KEY loaded: {'Yes' if os.environ.get('SUPABASE_ANON_KEY') else 'No'}")
+
+if os.environ.get('SUPABASE_KEY'):
+    print(f"SUPABASE_KEY start: {os.environ.get('SUPABASE_KEY')[:5]}...")
+if os.environ.get('SUPABASE_ANON_KEY'):
+    print(f"SUPABASE_ANON_KEY start: {os.environ.get('SUPABASE_ANON_KEY')[:5]}...")
 
 
 class Config:

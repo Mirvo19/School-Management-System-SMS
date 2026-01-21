@@ -22,21 +22,26 @@ def login():
     if form.validate_on_submit():
         # Supabase Login Logic
         identity = form.identity.data
-        supabase = get_db()
         
-        # Or query: email = identity OR username = identity
-        # Note: Supabase-py doesn't support sophisticated OR queries easily in one go 
-        # without calling .or_(). Let's try matching email first, then username.
-        
-        # Try finding by email
-        response = supabase.table('users').select('*').eq('email', identity).execute()
-        data = response.data
-        
-        # If not found, try username
-        if not data:
-            response = supabase.table('users').select('*').eq('username', identity).execute()
+        try:
+            supabase = get_db()
+            
+            # Or query: email = identity OR username = identity
+            # Note: Supabase-py doesn't support sophisticated OR queries easily in one go 
+            # without calling .or_(). Let's try matching email first, then username.
+            
+            # Try finding by email
+            response = supabase.table('users').select('*').eq('email', identity).execute()
             data = response.data
             
+            # If not found, try username
+            if not data:
+                response = supabase.table('users').select('*').eq('username', identity).execute()
+                data = response.data
+        except Exception as e:
+            flash(f"System Error: Cannot connect to authentication service. ({str(e)})", 'danger')
+            return render_template('auth/login.html', form=form)
+
         if data:
             user_data = data[0] # Get first result
             if check_password_hash(user_data['password'], form.password.data):

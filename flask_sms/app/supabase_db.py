@@ -2,7 +2,15 @@ import os
 from supabase import create_client, Client
 
 url: str = os.environ.get("SUPABASE_URL")
+# Prefer ANON key, fallback to generic KEY
 key: str = os.environ.get("SUPABASE_ANON_KEY") or os.environ.get("SUPABASE_KEY")
+
+if not url:
+    print("WARNING: SUPABASE_URL not found in environment variables (supabase_db.py)")
+if not key:
+    print("WARNING: SUPABASE_KEY/SUPABASE_ANON_KEY not found in environment variables (supabase_db.py)")
+else:
+    print(f"Supabase Client init using key starting with: {key[:5]}...")
 
 # Initialize client only if env vars exist (to avoid circular import errors during setup)
 supabase: Client = create_client(url, key) if url and key else None

@@ -3,34 +3,39 @@
 {% block title %}Create Dorm - {{ get_school_name() }}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-4 mb-4 border-bottom">
     <h1 class="h2">Add Dormitory</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ url_for('dorms.index') }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Back to List
+        <a href="{{ url_for('dorms.index') }}" class="btn btn-light text-secondary d-flex align-items-center">
+            <i class="fas fa-arrow-left me-2"></i> Back to List
         </a>
     </div>
 </div>
 
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-lg">
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 text-primary"><i class="fas fa-bed me-2"></i> Dorm Information</h5>
+            </div>
+            <div class="card-body p-4">
                 <form method="POST" action="">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                     <div class="mb-3">
-                        <label for="name" class="form-label">Dorm Name</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
+                        <label for="name" class="form-label fw-bold">Dorm Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required
+                            placeholder="e.g. Mandela Hall">
                     </div>
 
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    <div class="mb-4">
+                        <label for="description" class="form-label fw-bold">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                            placeholder="Optional description or capacity details"></textarea>
                     </div>
 
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Save Dorm</button>
+                        <button type="submit" class="btn btn-primary btn-lg shadow-sm">Save Dorm</button>
                     </div>
                 </form>
             </div>
