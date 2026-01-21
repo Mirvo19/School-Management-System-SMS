@@ -3,7 +3,8 @@ PINs management routes
 """
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required
-from app.models import Pin, db
+# from app.models import Pin, db
+from app.supabase_db import get_db, SupabaseModel
 from app.utils.helpers import admin_required
 import secrets
 
@@ -15,7 +16,9 @@ pins_bp = Blueprint('pins', __name__)
 @admin_required
 def index():
     """List all PINs"""
-    pins = Pin.query.order_by(Pin.created_at.desc()).all()
+    supabase = get_db()
+    res = supabase.table('pins').select('*').order('created_at', desc=True).execute()
+    pins = SupabaseModel.from_list(res.data)
     return render_template('pins/index.html', pins=pins)
 
 
@@ -26,14 +29,18 @@ def create():
     """Generate new PINs"""
     if request.method == 'POST':
         count = request.form.get('count', type=int, default=1)
+        supabase = get_db()
         
+        pins_data = []
         for _ in range(count):
             code = secrets.token_hex(8).upper()
-            pin = Pin(code=code)
-            db.session.add(pin)
+            pins_data.append({'code': code})
         
-        db.session.commit()
-        flash(f'{count} PIN(s) generated successfully!', 'success')
-        return redirect(url_for('pins.index'))
+        try:
+            supabase.table('pins').insert(pins_data).execute()
+            flash(f'{count} PIN(s) generated successfully!', 'success')
+            return redirect(url_for('pins.index'))
+        except Exception as e:
+            flash(f'Pin generation failed: {str(e)}', 'danger')
     
     return render_template('pins/create.html')

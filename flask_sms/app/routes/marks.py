@@ -1,9 +1,10 @@
 """
 Marks/Grades management routes
 """
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_required
-from app.models import Mark, Exam, Subject, StudentRecord, MyClass, User, db
+# from app.models import Mark, Exam, Subject, StudentRecord, MyClass, User, db
+from app.supabase_db import get_db, SupabaseModel
 from app.forms.mark_forms import MarkForm
 from app.utils.helpers import teacher_or_admin_required
 
@@ -17,9 +18,15 @@ marks_bp = Blueprint('marks', __name__)
 @teacher_or_admin_required
 def index():
     """Marks management page"""
-    exams = Exam.query.all()
-    subjects = Subject.query.all()
-    classes = MyClass.query.all()
+    supabase = get_db()
+    res_e = supabase.table('exams').select('*').execute()
+    res_s = supabase.table('subjects').select('*').execute()
+    res_c = supabase.table('my_classes').select('*').execute()
+    
+    exams = SupabaseModel.from_list(res_e.data)
+    subjects = SupabaseModel.from_list(res_s.data)
+    classes = SupabaseModel.from_list(res_c.data)
+    
     return render_template('marks/index.html', exams=exams, subjects=subjects, classes=classes)
 
 
@@ -28,18 +35,37 @@ def index():
 @teacher_or_admin_required
 def manage(exam_id, subject_id, class_id):
     """Manage marks for exam, subject, and class"""
-    exam = Exam.query.get_or_404(exam_id)
-    subject = Subject.query.get_or_404(subject_id)
-    students = StudentRecord.query.filter_by(my_class_id=class_id).all()
+    supabase = get_db()
     
+    # Fetch Exam, Subject
+    res_ex = supabase.table('exams').select('*').eq('id', exam_id).execute()
+    res_sub = supabase.table('subjects').select('*').eq('id', subject_id).execute()
+    
+    if not res_ex.data or not res_sub.data:
+        abort(404)
+        
+    exam = SupabaseModel(res_ex.data[0])
+    subject = SupabaseModel(res_sub.data[0])
+    
+    # Fetch Students in Class
+    # Need user name, so join user
+    res_stu = supabase.table('student_records').select('*, user:users(*)').eq('my_class_id', class_id).execute()
+    students = SupabaseModel.from_list(res_stu.data)
+    
+    # Fetch existing Marks for this batch
+    # Filter by exam, subject, and class_id (optional to filter by class in marks table if populated, else by student_ids)
+    # Marks table has my_class_id, so we use it.
+    res_marks = supabase.table('marks').select('*').eq('exam_id', exam_id).eq('subject_id', subject_id).eq('my_class_id', class_id).execute()
+    
+    marks_lookup = { m['student_id']: SupabaseModel(m) for m in res_marks.data }
+    
+    # Map marks to students dict for template: marks[student.id] = mark_obj
     marks = {}
     for student in students:
-        mark = Mark.query.filter_by(
-            exam_id=exam_id,
-            subject_id=subject_id,
-            student_id=student.user_id
-        ).first()
-        marks[student.id] = mark
+        # student.user_id is the user id, student.id is record id. 
+        # Marks usually link to User ID (student_id col in Marks table usually refers to user table id based on foreign key)
+        # Checking original models.py: Mark.student_id FK users.id.
+        marks[student.id] = marks_lookup.get(student.user_id)
     
     return render_template('marks/manage.html',
                          exam=exam, subject=subject,
@@ -51,38 +77,68 @@ def manage(exam_id, subject_id, class_id):
 @teacher_or_admin_required
 def save():
     """Save marks"""
+    # This function iterates through students and updates marks.
+    # In Supabase/SQL, bulk upsert is better, but iterating is safer for logic if we need to calc totals individually.
+    
     exam_id = request.form.get('exam_id', type=int)
     subject_id = request.form.get('subject_id', type=int)
     class_id = request.form.get('class_id', type=int)
     
-    students = StudentRecord.query.filter_by(my_class_id=class_id).all()
+    supabase = get_db()
+    
+    # Get all students for class to iterate form data
+    res_stu = supabase.table('student_records').select('*').eq('my_class_id', class_id).execute()
+    students = SupabaseModel.from_list(res_stu.data)
+    
+    # Get exam info for 'year'
+    res_ex = supabase.table('exams').select('year').eq('id', exam_id).execute()
+    exam_year = res_ex.data[0]['year'] if res_ex.data else None
+    
+    upsert_data = []
     
     for student in students:
-        mark = Mark.query.filter_by(
-            exam_id=exam_id,
-            subject_id=subject_id,
-            student_id=student.user_id
-        ).first()
+        t1 = request.form.get(f't1_{student.id}', type=int)
+        exams = request.form.get(f'exams_{student.id}', type=int)
         
-        if not mark:
-            mark = Mark(
-                exam_id=exam_id,
-                subject_id=subject_id,
-                student_id=student.user_id,
-                my_class_id=class_id,
-                section_id=student.section_id,
-                year=Exam.query.get(exam_id).year
-            )
-            db.session.add(mark)
+        # Original logic calculates total. 
+        # Note: If input is empty string, type=int returns None.
         
-        # Update marks from form
-        mark.t1 = request.form.get(f't1_{student.id}', type=int)
-        mark.exams = request.form.get(f'exams_{student.id}', type=int)
+        val_t1 = t1 or 0
+        val_exams = exams or 0
+        total = val_t1 + val_exams
         
-        # Calculate total
-        mark.total = (mark.t1 or 0) + (mark.exams or 0)
-    
-    db.session.commit()
+        # Prepare record
+        # filtering using match columns for upsert usually requires a unique constraint 
+        # on (exam_id, subject_id, student_id).
+        # Assuming Supabase/Postgres has this constraint (or ID based update).
+        # Since we don't have the mark ID easily here without querying, 
+        # we might need to check if exists or use upsert if schema supports it.
+        # Fallback: Select existing mark ID to update, else insert.
+        
+        # Optimize: We did fetch marks in manage(), but here we are in a disconnected POST.
+        # Queries inside loop are bad. But safer for now during migration.
+        
+        existing = supabase.table('marks').select('id').eq('exam_id', exam_id).eq('subject_id', subject_id).eq('student_id', student.user_id).execute()
+        
+        row = {
+            'exam_id': exam_id,
+            'subject_id': subject_id,
+            'student_id': student.user_id,
+            'my_class_id': class_id,
+            'section_id': student.section_id,
+            'year': exam_year,
+            't1': val_t1,
+            'exams': val_exams,
+            'total': total
+        }
+        
+        if existing.data:
+            # Update
+            supabase.table('marks').update(row).eq('id', existing.data[0]['id']).execute()
+        else:
+            # Insert
+            supabase.table('marks').insert(row).execute()
+
     flash('Marks saved successfully!', 'success')
     return redirect(url_for('marks.manage',
                           exam_id=exam_id,
@@ -111,14 +167,34 @@ def calculate_gpa(percentage):
 @teacher_or_admin_required
 def class_results(exam_id, class_id):
     """Generate class results report"""
-    exam = Exam.query.get_or_404(exam_id)
-    my_class = MyClass.query.get_or_404(class_id)
-    students = StudentRecord.query.filter_by(my_class_id=class_id).all()
-    subjects = Subject.query.filter_by(my_class_id=class_id).all()
+    supabase = get_db()
     
-    # If no specific subjects for class, getting all subjects (fallback logic if needed)
+    res_ex = supabase.table('exams').select('*').eq('id', exam_id).execute()
+    res_cl = supabase.table('my_classes').select('*').eq('id', class_id).execute()
+    
+    if not res_ex.data or not res_cl.data:
+        abort(404)
+        
+    exam = SupabaseModel(res_ex.data[0])
+    my_class = SupabaseModel(res_cl.data[0])
+    
+    # Students
+    res_st = supabase.table('student_records').select('*, user:users(*)').eq('my_class_id', class_id).execute()
+    students = SupabaseModel.from_list(res_st.data)
+    
+    # Subjects
+    # Subjects might be associated to class, or all subjects
+    res_sub = supabase.table('subjects').select('*').eq('my_class_id', class_id).execute()
+    subjects = SupabaseModel.from_list(res_sub.data)
+    
     if not subjects:
-        subjects = Subject.query.all()
+        res_sub_all = supabase.table('subjects').select('*').execute()
+        subjects = SupabaseModel.from_list(res_sub_all.data)
+
+    # Bulk fetch marks for this exam and class to avoid N+1 inside loop
+    res_marks = supabase.table('marks').select('*').eq('exam_id', exam_id).eq('my_class_id', class_id).execute()
+    # Index by (student_id, subject_id) -> record
+    marks_map = { (m['student_id'], m['subject_id']): m for m in res_marks.data }
 
     results = []
     
@@ -131,13 +207,11 @@ def class_results(exam_id, class_id):
         }
         
         for subject in subjects:
-            mark = Mark.query.filter_by(
-                exam_id=exam_id,
-                subject_id=subject.id,
-                student_id=student.user_id
-            ).first()
+            # mark_data = marks_map.get( (student.user_id, subject.id) )
+            # student.user_id is int or str depending on DB. Supabase returns ints as ints usually.
+            mark_data = marks_map.get( (student.user_id, subject.id) )
             
-            score = mark.total if mark else 0
+            score = mark_data['total'] if mark_data else 0
             student_data['marks'][subject.id] = score
             student_data['total_score'] += score
             student_data['subject_count'] += 1
@@ -169,7 +243,7 @@ def class_results(exam_id, class_id):
             s = r['marks'].get(subject.id, 0)
             if s > high_score:
                 high_score = s
-                scorer = r['student'].user.name
+                scorer = r['student'].user['name'] if isinstance(r['student'].user, dict) else r['student'].user.name
         subject_highs[subject.id] = {'score': high_score, 'scorer': scorer}
         
     # Class Average
@@ -190,44 +264,59 @@ def class_results(exam_id, class_id):
 @teacher_or_admin_required
 def student_result(exam_id, student_id):
     """Generate individual student result report"""
-    exam = Exam.query.get_or_404(exam_id)
-    student = User.query.get_or_404(student_id)
+    supabase = get_db()
     
-    # Get student record for class info associated with this student (current active session preferably)
-    # Assuming the student record helps us identify the class.
-    # We might need to handle cases where student has multiple records, but usually one active.
-    # For now, we'll try to find the record matching the exam year or just the latest one.
-    student_record = StudentRecord.query.filter_by(user_id=student_id).first()
+    res_ex = supabase.table('exams').select('*').eq('id', exam_id).execute()
+    if not res_ex.data: abort(404)
+    exam = SupabaseModel(res_ex.data[0])
     
-    if not student_record:
+    res_u = supabase.table('users').select('*').eq('id', student_id).execute()
+    if not res_u.data: abort(404)
+    student = SupabaseModel(res_u.data[0])
+    
+    res_st = supabase.table('student_records').select('*, my_class:my_classes(*)').eq('user_id', student_id).execute()
+    if not res_st.data:
         flash('Student record not found.', 'danger')
         return redirect(url_for('marks.index'))
+    student_record = SupabaseModel(res_st.data[0])
+
 
     my_class = student_record.my_class
-    subjects = Subject.query.filter_by(my_class_id=my_class.id).all()
+    # my_class might be dict or SupabaseModel depending on nesting. 
+    # SupabaseModel wrapper usually recursively wraps if we enforced it, 
+    # but currently it just sets attributes.
+    # If student_record.my_class is a dict, we can wrap it or use it as is if template allows dict access 
+    # (Jinja2 allows dot access on dicts too? No, it prefers dot for objects. 
+    # Actually Jinja2 dot works for dict keys too! But let's be safe).
+    # Since SupabaseModel __init__ sets attr, if value is dict, it sets self.my_class = dict.
+    # Jinja2: {{ record.my_class.name }} works on dict.
+    
+    # Get Subjects
+    class_id = my_class['id'] if isinstance(my_class, dict) else my_class.id
+    
+    res_sub = supabase.table('subjects').select('*').eq('my_class_id', class_id).execute()
+    subjects = SupabaseModel.from_list(res_sub.data)
     if not subjects:
-        subjects = Subject.query.all()
+        res_all = supabase.table('subjects').select('*').execute()
+        subjects = SupabaseModel.from_list(res_all.data)
 
     marks_data = []
     total_score = 0
     subject_count = 0
     
+    # Bulk Fetch Marks
+    res_marks = supabase.table('marks').select('*').eq('exam_id', exam_id).eq('student_id', student_id).execute()
+    marks_map = { m['subject_id']: m for m in res_marks.data }
+    
     for subject in subjects:
-        mark = Mark.query.filter_by(
-            exam_id=exam_id,
-            subject_id=subject.id,
-            student_id=student.id
-        ).first()
+        mark = marks_map.get(subject.id)
         
-        t1 = mark.t1 if mark else 0
-        exams = mark.exams if mark else 0
-        total = mark.total if mark else 0
+        t1 = mark['t1'] if mark else 0
+        exams = mark['exams'] if mark else 0
+        total = mark['total'] if mark else 0
         
-        # Calculate grade for this specific subject
-        # Note: Generic grading usually applies to the percentage of the subject score if max is 100
-        # If max score is 100, score is percentage.
         grade = calculate_grade(total) 
-        sub_remark = mark.teacher_remark if mark else ""
+        sub_remark = mark['teacher_remark'] if mark and 'teacher_remark' in mark else ""
         
         marks_data.append({
             'subject': subject,

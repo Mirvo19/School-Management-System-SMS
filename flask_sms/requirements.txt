@@ -1,8 +1,8 @@
 Flask==2.3.3
 Werkzeug<3.0.0
-Flask-SQLAlchemy>=3.0.0
-sqlalchemy>=2.0.0
-Flask-Migrate
+# Flask-SQLAlchemy>=3.0.0
+# sqlalchemy>=2.0.0
+# Flask-Migrate
 Flask-Login==0.6.3
 Flask-WTF
 Flask-Mail
@@ -15,4 +15,5 @@ PyPDF2
 reportlab
 hashids
 gunicorn
-psycopg2-binary>=2.9.9
+# psycopg2-binary>=2.9.9
+supabase>=2.0.0

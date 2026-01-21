@@ -3,7 +3,9 @@ Authentication routes - Login, Logout, Register
 """
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
-from app.models import User, db
+# from app.models import User, db
+from app.supabase_db import get_db, SupabaseModel
+from werkzeug.security import check_password_hash, generate_password_hash
 from app.forms.auth_forms import LoginForm, RegisterForm, ChangePasswordForm
 from werkzeug.urls import url_parse
 
@@ -18,18 +20,36 @@ def login():
     
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter(
-            (User.email == form.identity.data) | 
-            (User.username == form.identity.data)
-        ).first()
+        # Supabase Login Logic
+        identity = form.identity.data
+        supabase = get_db()
         
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=form.remember_me.data)
-            next_page = request.args.get('next')
-            if not next_page or url_parse(next_page).netloc != '':
-                next_page = url_for('main.dashboard')
-            flash('Login successful!', 'success')
-            return redirect(next_page)
+        # Or query: email = identity OR username = identity
+        # Note: Supabase-py doesn't support sophisticated OR queries easily in one go 
+        # without calling .or_(). Let's try matching email first, then username.
+        
+        # Try finding by email
+        response = supabase.table('users').select('*').eq('email', identity).execute()
+        data = response.data
+        
+        # If not found, try username
+        if not data:
+            response = supabase.table('users').select('*').eq('username', identity).execute()
+            data = response.data
+            
+        if data:
+            user_data = data[0] # Get first result
+            if check_password_hash(user_data['password'], form.password.data):
+                user_obj = SupabaseModel(user_data)
+                login_user(user_obj, remember=form.remember_me.data)
+                
+                next_page = request.args.get('next')
+                if not next_page or url_parse(next_page).netloc != '':
+                    next_page = url_for('main.dashboard')
+                flash('Login successful!', 'success')
+                return redirect(next_page)
+            else:
+                 flash('Invalid username/email or password', 'danger')
         else:
             flash('Invalid username/email or password', 'danger')
     
@@ -53,17 +73,26 @@ def register():
     
     form = RegisterForm()
     if form.validate_on_submit():
-        user = User(
-            name=form.name.data,
-            email=form.email.data,
-            username=form.username.data,
-            user_type='student'  # Default type
-        )
-        user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
+        supabase = get_db()
         
-        flash('Registration successful! Please login.', 'success')
-        return redirect(url_for('auth.login'))
+        # Check if email/username exists
+        # This is a bit manual without constraints catching errors gracefully
+        
+        # Create user dict
+        new_user = {
+            'name': form.name.data,
+            'email': form.email.data,
+            'username': form.username.data,
+            'user_type': 'student',
+            'password': generate_password_hash(form.password.data)
+        }
+        
+        try:
+             response = supabase.table('users').insert(new_user).execute()
+             flash('Registration successful! Please login.', 'success')
+             return redirect(url_for('auth.login'))
+        except Exception as e:
+             # Handle unique violation etc (typically Supabase returns an error structure)
+             flash(f'Registration failed: {str(e)}', 'danger')
     
     return render_template('auth/register.html', form=form)

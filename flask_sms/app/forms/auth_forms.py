@@ -4,7 +4,7 @@ Authentication forms
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError, Length
-from app.models import User
+# from app.models import User
 
 
 class LoginForm(FlaskForm):
@@ -25,16 +25,6 @@ class RegisterForm(FlaskForm):
         DataRequired(), EqualTo('password', message='Passwords must match')
     ])
     submit = SubmitField('Register')
-    
-    def validate_email(self, email):
-        user = User.query.filter_by(email=email.data).first()
-        if user:
-            raise ValidationError('Email already registered.')
-    
-    def validate_username(self, username):
-        user = User.query.filter_by(username=username.data).first()
-        if user:
-            raise ValidationError('Username already taken.')
 
 
 class ChangePasswordForm(FlaskForm):

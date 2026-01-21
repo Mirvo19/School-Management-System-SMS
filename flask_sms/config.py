@@ -7,14 +7,26 @@ from dotenv import load_dotenv
 
 # Load environment variables from .env file
 basedir = os.path.abspath(os.path.dirname(__file__))
-load_dotenv(os.path.join(basedir, '.env'))
+env_path = os.path.join(basedir, '.env')
+print(f"Loading .env from: {env_path}")
+if os.path.exists(env_path):
+    print(".env file found!")
+else:
+    print(".env file NOT found!")
+    
+load_dotenv(env_path)
+print(f"SUPABASE_URL loaded: {'Yes' if os.environ.get('SUPABASE_URL') else 'No'}")
 
 
 class Config:
     """Base configuration"""
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_RECORD_QUERIES = True
+    # SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # SQLALCHEMY_RECORD_QUERIES = True
+    
+    # Supabase Configuration
+    SUPABASE_URL = os.environ.get('SUPABASE_URL')
+    SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
     
     # Session configuration
     PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
@@ -52,14 +64,14 @@ class Config:
 class DevelopmentConfig(Config):
     """Development configuration"""
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL')
-    SQLALCHEMY_ECHO = True
+    # SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL')
+    # SQLALCHEMY_ECHO = True
 
 
 class TestingConfig(Config):
     """Testing configuration"""
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    # SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
 
 
@@ -67,13 +79,19 @@ class ProductionConfig(Config):
     """Production configuration"""
     DEBUG = False
     
-    uri = os.environ.get('DATABASE_URL')
-    if uri and uri.startswith('postgres://'):
-        uri = uri.replace('postgres://', 'postgresql://', 1)
+    # uri = os.environ.get('DATABASE_URL')
+    # if uri and uri.startswith('postgres://'):
+    #     uri = uri.replace('postgres://', 'postgresql://', 1)
         
-    SQLALCHEMY_DATABASE_URI = uri
+    # SQLALCHEMY_DATABASE_URI = uri
         
     SESSION_COOKIE_SECURE = True
+    
+    # Database connection options for stability
+    # SQLALCHEMY_ENGINE_OPTIONS = {
+    #     "pool_pre_ping": True,
+    #     "pool_recycle": 300,
+    # }
 
 
 config = {

@@ -1,0 +1,62 @@
+import os
+from supabase import create_client, Client
+
+url: str = os.environ.get("SUPABASE_URL")
+key: str = os.environ.get("SUPABASE_KEY")
+
+# Initialize client only if env vars exist (to avoid circular import errors during setup)
+supabase: Client = create_client(url, key) if url and key else None
+
+def get_db():
+    """Get the Supabase client instance"""
+    if not supabase:
+        # Fallback or re-attempt if env vars were loaded late
+        current_url = os.environ.get("SUPABASE_URL")
+        current_key = os.environ.get("SUPABASE_KEY")
+        
+        if not current_url:
+            print("ERROR: SUPABASE_URL is missing from environment.")
+        if not current_key:
+            print("ERROR: SUPABASE_KEY is missing from environment.")
+            
+        if current_url and current_key:
+            return create_client(current_url, current_key)
+        raise Exception("Supabase credentials not found in environment")
+    return supabase
+
+class SupabaseModel:
+    """
+    Wrapper for Supabase dictionary responses to allow object-attribute access.
+    Compatible with Jinja2 templates expecting user.name, etc.
+    """
+    def __init__(self, data):
+        self._data = data
+        if data:
+            for key, value in data.items():
+                # If value is a dict, it might be a relationship -> wrap it too?
+                # For now, keep it simple. If we need deep wrapping, we can add it.
+                setattr(self, key, value)
+    
+    def get(self, key, default=None):
+        return self._data.get(key, default)
+    
+    @classmethod
+    def from_list(cls, data_list):
+        """Convert a list of dictionaries to a list of SupabaseModels"""
+        return [cls(item) for item in data_list] if data_list else []
+    
+    # Flask-Login required mixin methods
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return str(self.id)
