@@ -3,36 +3,36 @@
 {% block title %}Admit Student - {{ get_school_name() }}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-4 mb-4 border-bottom">
     <h1 class="h2">Admit New Student</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ url_for('students.index') }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Back to List
+        <a href="{{ url_for('students.index') }}" class="btn btn-light text-secondary d-flex align-items-center">
+            <i class="fas fa-arrow-left me-2"></i> Back to List
         </a>
     </div>
 </div>
 
 <div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Student Registration Form</h5>
+    <div class="col-md-10 col-lg-8">
+        <div class="card border-0 shadow-lg">
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 text-primary"><i class="fas fa-user-plus me-2"></i> Student Registration Form</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <form method="POST" action="">
                     {{ form.hidden_tag() }}
 
-                    <h6 class="mb-3 text-primary border-bottom pb-2">Personal Information</h6>
+                    <h6 class="mb-3 text-secondary text-uppercase fw-bold border-bottom pb-2">Personal Information</h6>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="name" class="form-label">{{ form.name.label }}</label>
+                            <label for="name" class="form-label fw-bold">{{ form.name.label }}</label>
                             {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
                             {% for error in form.name.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="col-md-6">
-                            <label for="email" class="form-label">{{ form.email.label }}</label>
+                            <label for="email" class="form-label fw-bold">{{ form.email.label }}</label>
                             {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
                             {% for error in form.email.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
@@ -42,14 +42,14 @@
 
                     <div class="row mb-3">
                         <div class="col-md-4">
-                            <label for="username" class="form-label">{{ form.username.label }}</label>
+                            <label for="username" class="form-label fw-bold">{{ form.username.label }}</label>
                             {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else "")) }}
                             {% for error in form.username.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="col-md-4">
-                            <label for="password" class="form-label">{{ form.password.label }}</label>
+                            <label for="password" class="form-label fw-bold">{{ form.password.label }}</label>
                             {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
                             {% for error in form.password.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
@@ -57,7 +57,7 @@
                             <small class="text-muted">Required for new admission.</small>
                         </div>
                         <div class="col-md-4">
-                            <label for="phone" class="form-label">{{ form.phone.label }}</label>
+                            <label for="phone" class="form-label fw-bold">{{ form.phone.label }}</label>
                             {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else "")) }}
                             {% for error in form.phone.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
@@ -67,7 +67,7 @@
 
                     <div class="row mb-3">
                         <div class="col-md-4">
-                            <label for="dob" class="form-label">{{ form.dob.label }}</label>
+                            <label for="dob" class="form-label fw-bold">{{ form.dob.label }}</label>
                             {{ form.dob(class="form-control" + (" is-invalid" if form.dob.errors else ""), type="date")
                             }}
                             {% for error in form.dob.errors %}
@@ -75,14 +75,15 @@
                             {% endfor %}
                         </div>
                         <div class="col-md-4">
-                            <label for="gender" class="form-label">{{ form.gender.label }}</label>
+                            <label for="gender" class="form-label fw-bold">{{ form.gender.label }}</label>
                             {{ form.gender(class="form-select" + (" is-invalid" if form.gender.errors else "")) }}
                             {% for error in form.gender.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="col-md-4">
-                            <label for="blood_group_id" class="form-label">{{ form.blood_group_id.label }}</label>
+                            <label for="blood_group_id" class="form-label fw-bold">{{ form.blood_group_id.label
+                                }}</label>
                             {{ form.blood_group_id(class="form-select" + (" is-invalid" if form.blood_group_id.errors
                             else "")) }}
                             {% for error in form.blood_group_id.errors %}
@@ -91,8 +92,8 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="address" class="form-label">{{ form.address.label }}</label>
+                    <div class="mb-4">
+                        <label for="address" class="form-label fw-bold">{{ form.address.label }}</label>
                         {{ form.address(class="form-control" + (" is-invalid" if form.address.errors else ""), rows=3)
                         }}
                         {% for error in form.address.errors %}
@@ -100,17 +101,18 @@
                         {% endfor %}
                     </div>
 
-                    <h6 class="mb-3 mt-4 text-primary border-bottom pb-2">Academic Information</h6>
+                    <h6 class="mb-3 mt-4 text-secondary text-uppercase fw-bold border-bottom pb-2">Academic Information
+                    </h6>
                     <div class="row mb-3">
                         <div class="col-md-4">
-                            <label for="adm_no" class="form-label">{{ form.adm_no.label }}</label>
+                            <label for="adm_no" class="form-label fw-bold">{{ form.adm_no.label }}</label>
                             {{ form.adm_no(class="form-control" + (" is-invalid" if form.adm_no.errors else "")) }}
                             {% for error in form.adm_no.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
                             {% endfor %}
                         </div>
                         <div class="col-md-4">
-                            <label for="year_admitted" class="form-label">{{ form.year_admitted.label }}</label>
+                            <label for="year_admitted" class="form-label fw-bold">{{ form.year_admitted.label }}</label>
                             {{ form.year_admitted(class="form-control" + (" is-invalid" if form.year_admitted.errors
                             else "")) }}
                             {% for error in form.year_admitted.errors %}
@@ -118,7 +120,7 @@
                             {% endfor %}
                         </div>
                         <div class="col-md-4">
-                            <label for="session" class="form-label">{{ form.session.label }}</label>
+                            <label for="session" class="form-label fw-bold">{{ form.session.label }}</label>
                             {{ form.session(class="form-control" + (" is-invalid" if form.session.errors else "")) }}
                             {% for error in form.session.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
@@ -128,7 +130,7 @@
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="my_class_id" class="form-label">{{ form.my_class_id.label }}</label>
+                            <label for="my_class_id" class="form-label fw-bold">{{ form.my_class_id.label }}</label>
                             {{ form.my_class_id(class="form-select" + (" is-invalid" if form.my_class_id.errors else
                             "")) }}
                             {% for error in form.my_class_id.errors %}
@@ -136,7 +138,7 @@
                             {% endfor %}
                         </div>
                         <div class="col-md-6">
-                            <label for="section_id" class="form-label">{{ form.section_id.label }}</label>
+                            <label for="section_id" class="form-label fw-bold">{{ form.section_id.label }}</label>
                             {{ form.section_id(class="form-select" + (" is-invalid" if form.section_id.errors else ""))
                             }}
                             {% for error in form.section_id.errors %}
@@ -147,7 +149,7 @@
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="my_parent_id" class="form-label">{{ form.my_parent_id.label }}</label>
+                            <label for="my_parent_id" class="form-label fw-bold">{{ form.my_parent_id.label }}</label>
                             {{ form.my_parent_id(class="form-select" + (" is-invalid" if form.my_parent_id.errors else
                             "")) }}
                             {% for error in form.my_parent_id.errors %}
@@ -155,7 +157,7 @@
                             {% endfor %}
                         </div>
                         <div class="col-md-6">
-                            <label for="house" class="form-label">{{ form.house.label }}</label>
+                            <label for="house" class="form-label fw-bold">{{ form.house.label }}</label>
                             {{ form.house(class="form-control" + (" is-invalid" if form.house.errors else "")) }}
                             {% for error in form.house.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
@@ -163,8 +165,8 @@
                         </div>
                     </div>
 
-                    <div class="d-grid gap-2 mt-4">
-                        {{ form.submit(class="btn btn-primary") }}
+                    <div class="d-grid gap-2 mt-5">
+                        {{ form.submit(class="btn btn-primary btn-lg shadow-sm") }}
                     </div>
                 </form>
             </div>

@@ -3,46 +3,62 @@
 {% block title %}Exam Details - {{ get_school_name() }}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-4 mb-4 border-bottom">
     <h1 class="h2">{{ exam.name }}</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ url_for('exams.index') }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Back to List
+        <a href="{{ url_for('exams.index') }}" class="btn btn-light text-secondary d-flex align-items-center">
+            <i class="fas fa-arrow-left me-2"></i> Back to List
         </a>
     </div>
 </div>
 
 <div class="row">
     <div class="col-md-4 mb-4">
-        <div class="card bg-light">
+        <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
-                <h5 class="card-title">Info</h5>
-                <p class="card-text">
-                    <strong>Year/Session:</strong> {{ exam.year }}<br>
-                    <strong>Term:</strong>
-                    {% if exam.term == 1 %}First Term
-                    {% elif exam.term == 2 %}Second Term
-                    {% elif exam.term == 3 %}Third Term
-                    {% else %}{{ exam.term }}{% endif %}
-                </p>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-shape icon-shape-primary rounded-circle me-3">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <h5 class="card-title mb-0 fw-bold">Exam Info</h5>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted text-uppercase fw-bold">Year/Session</small>
+                    <div class="h5">{{ exam.year }}</div>
+                </div>
+                <div>
+                    <small class="text-muted text-uppercase fw-bold">Term</small>
+                    <div class="h5">
+                        {% if exam.term == 1 %}First Term
+                        {% elif exam.term == 2 %}Second Term
+                        {% elif exam.term == 3 %}Third Term
+                        {% else %}{{ exam.term }}{% endif %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0">Records</h5>
-    </div>
-    <div class="card-body">
-        <div class="alert alert-info">
-            To view or enter marks, please use the <a href="{{ url_for('marks.index') }}">Marks Management</a> module.
+    <div class="col-md-8 mb-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 text-primary"><i class="fas fa-database me-2"></i> Records</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-soft-info d-flex align-items-center">
+                    <i class="fas fa-info-circle me-3 fs-4 text-info"></i>
+                    <div>
+                        To view or enter marks, please use the <a href="{{ url_for('marks.index') }}"
+                            class="fw-bold text-info">Marks Management</a> module.
+                    </div>
+                </div>
+
+                {% if exam_records %}
+                <p class="mb-0 text-muted">Total Records found: <span class="fw-bold text-dark">{{ exam_records|length
+                        }}</span></p>
+                {% endif %}
+            </div>
         </div>
-
-        {% if exam_records %}
-        <!-- Logic to display stats or records if implemented -->
-        <p>Records found: {{ exam_records|length }}</p>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

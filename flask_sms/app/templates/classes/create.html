@@ -3,35 +3,35 @@
 {% block title %}Create Class - {{ get_school_name() }}{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-4 mb-4 border-bottom">
     <h1 class="h2">Create New Class</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <a href="{{ url_for('classes.index') }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Back to List
+        <a href="{{ url_for('classes.index') }}" class="btn btn-light text-secondary d-flex align-items-center">
+            <i class="fas fa-arrow-left me-2"></i> Back to List
         </a>
     </div>
 </div>
 
 <div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Class Details</h5>
+    <div class="col-md-8 col-lg-6">
+        <div class="card border-0 shadow-lg">
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 text-primary"><i class="fas fa-chalkboard me-2"></i> Class Details</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <form method="POST" action="">
                     {{ form.hidden_tag() }}
 
                     <div class="mb-3">
-                        <label for="name" class="form-label">{{ form.name.label }}</label>
+                        <label for="name" class="form-label fw-bold">{{ form.name.label }}</label>
                         {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
                         {% for error in form.name.errors %}
                         <div class="invalid-feedback">{{ error }}</div>
                         {% endfor %}
                     </div>
 
-                    <div class="mb-3">
-                        <label for="class_type_id" class="form-label">{{ form.class_type_id.label }}</label>
+                    <div class="mb-4">
+                        <label for="class_type_id" class="form-label fw-bold">{{ form.class_type_id.label }}</label>
                         {{ form.class_type_id(class="form-select" + (" is-invalid" if form.class_type_id.errors else
                         "")) }}
                         {% for error in form.class_type_id.errors %}
@@ -40,7 +40,7 @@
                     </div>
 
                     <div class="d-grid gap-2">
-                        {{ form.submit(class="btn btn-primary") }}
+                        {{ form.submit(class="btn btn-primary btn-lg shadow-sm") }}
                     </div>
                 </form>
             </div>
