@@ -12,8 +12,8 @@ from app import create_app
 config_name = os.getenv('FLASK_CONFIG', 'default')
 print(f" * Starting app with config: {config_name}")
 
-application = create_app(config_name)
+app = create_app(config_name)
 
 if __name__ == '__main__':
     # Run the application
-    application.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
