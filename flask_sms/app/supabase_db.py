@@ -2,7 +2,7 @@ import os
 from supabase import create_client, Client
 
 url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
+key: str = os.environ.get("SUPABASE_ANON_KEY") or os.environ.get("SUPABASE_KEY")
 
 # Initialize client only if env vars exist (to avoid circular import errors during setup)
 supabase: Client = create_client(url, key) if url and key else None
@@ -12,12 +12,12 @@ def get_db():
     if not supabase:
         # Fallback or re-attempt if env vars were loaded late
         current_url = os.environ.get("SUPABASE_URL")
-        current_key = os.environ.get("SUPABASE_KEY")
+        current_key = os.environ.get("SUPABASE_ANON_KEY") or os.environ.get("SUPABASE_KEY")
         
         if not current_url:
             print("ERROR: SUPABASE_URL is missing from environment.")
         if not current_key:
-            print("ERROR: SUPABASE_KEY is missing from environment.")
+            print("ERROR: SUPABASE_ANON_KEY and SUPABASE_KEY are missing from environment.")
             
         if current_url and current_key:
             return create_client(current_url, current_key)
