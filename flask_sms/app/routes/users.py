@@ -4,6 +4,7 @@ User management routes
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required
 from app.supabase_db import get_db, SupabaseModel
+from datetime import datetime
 # from app.models import User, StaffRecord, db
 from app.forms.user_forms import UserForm, StaffForm
 from werkzeug.security import generate_password_hash
@@ -117,7 +118,25 @@ def show(id):
         flash('User not found', 'danger')
         return redirect(url_for('users.index'))
         
+    if not res.data:
+        flash('User not found', 'danger')
+        return redirect(url_for('users.index'))
+        
     user = SupabaseModel(res.data[0])
+    
+    # Fix date formatting for show view
+    if user.created_at and isinstance(user.created_at, str):
+        try:
+             user.created_at = datetime.fromisoformat(user.created_at.replace('Z', '+00:00'))
+        except: pass
+
+    if user.dob and isinstance(user.dob, str):
+        try:
+             # Handle simple date string "YYYY-MM-DD" or full ISO timestamp
+             dob_str = str(user.dob).split('T')[0]
+             user.dob = datetime.strptime(dob_str, '%Y-%m-%d')
+        except: pass
+        
     return render_template('users/show.html', user=user)
 
 
@@ -129,18 +148,23 @@ def edit(id):
     supabase = get_db()
     res = supabase.table('users').select('*').eq('id', id).execute()
     if not res.data:
-         # handle 404
-         pass
+         flash('User not found', 'danger')
+         return redirect(url_for('users.index'))
     
     user_data = res.data[0]
     user = SupabaseModel(user_data)
     form = UserForm(obj=user)
     
-    # Warning: Form population from SupabaseModel might be tricky 
-    # if it doesn't align perfectly with Object introspection used by wtforms.
-    # We might need to manually populate form.process(data=user_data)
-    
     if request.method == 'GET':
+        # FIX: WTForms DateField requires a date object, not a string
+        if user_data.get('dob'):
+            try:
+                # Handle cases where dob might be full datetime string from DB or simple date
+                dob_str = str(user_data['dob']).split('T')[0]
+                user_data['dob'] = datetime.strptime(dob_str, '%Y-%m-%d').date()
+            except Exception as e:
+                print(f"Error parsing date: {e}")
+        
         form.process(data=user_data) # Populate form from dict
     
     if form.validate_on_submit():
@@ -149,7 +173,10 @@ def edit(id):
            'email': form.email.data,
            'username': form.username.data,
            'user_type': form.user_type.data,
-           'phone': form.phone.data
+           'phone': form.phone.data,
+           'dob': str(form.dob.data) if form.dob.data else None,
+           'gender': form.gender.data,
+           'address': form.address.data
         }
         
         try:

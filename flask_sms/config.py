@@ -33,7 +33,8 @@ class Config:
     
     # Supabase Configuration
     SUPABASE_URL = os.environ.get('SUPABASE_URL', '').strip()
-    SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '').strip()
+    # Support both SUPABASE_KEY and SUPABASE_ANON_KEY
+    SUPABASE_KEY = (os.environ.get('SUPABASE_KEY') or os.environ.get('SUPABASE_ANON_KEY') or '').strip()
     
     # Session configuration
     PERMANENT_SESSION_LIFETIME = timedelta(hours=24)

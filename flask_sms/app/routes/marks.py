@@ -49,7 +49,7 @@ def manage(exam_id, subject_id, class_id):
     
     # Fetch Students in Class
     # Need user name, so join user
-    res_stu = supabase.table('student_records').select('*, user:users(*)').eq('my_class_id', class_id).execute()
+    res_stu = supabase.table('student_records').select('*, user:users!student_records_user_id_fkey(*)').eq('my_class_id', class_id).execute()
     students = SupabaseModel.from_list(res_stu.data)
     
     # Fetch existing Marks for this batch
@@ -179,7 +179,7 @@ def class_results(exam_id, class_id):
     my_class = SupabaseModel(res_cl.data[0])
     
     # Students
-    res_st = supabase.table('student_records').select('*, user:users(*)').eq('my_class_id', class_id).execute()
+    res_st = supabase.table('student_records').select('*, user:users!student_records_user_id_fkey(*)').eq('my_class_id', class_id).execute()
     students = SupabaseModel.from_list(res_st.data)
     
     # Subjects
@@ -211,7 +211,7 @@ def class_results(exam_id, class_id):
             # student.user_id is int or str depending on DB. Supabase returns ints as ints usually.
             mark_data = marks_map.get( (student.user_id, subject.id) )
             
-            score = mark_data['total'] if mark_data else 0
+            score = (mark_data.get('total') or 0) if mark_data else 0
             student_data['marks'][subject.id] = score
             student_data['total_score'] += score
             student_data['subject_count'] += 1
@@ -311,9 +311,9 @@ def student_result(exam_id, student_id):
     for subject in subjects:
         mark = marks_map.get(subject.id)
         
-        t1 = mark['t1'] if mark else 0
-        exams = mark['exams'] if mark else 0
-        total = mark['total'] if mark else 0
+        t1 = (mark.get('t1') or 0) if mark else 0
+        exams = (mark.get('exams') or 0) if mark else 0
+        total = (mark.get('total') or 0) if mark else 0
         
         grade = calculate_grade(total) 
         sub_remark = mark['teacher_remark'] if mark and 'teacher_remark' in mark else ""

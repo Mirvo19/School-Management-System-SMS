@@ -5,6 +5,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required
 # from app.models import MyClass, Section, ClassType, db, User
 from app.supabase_db import get_db, SupabaseModel
+from datetime import datetime
 from app.forms.class_forms import ClassForm, SectionForm
 from app.utils.helpers import admin_required
 
@@ -19,6 +20,14 @@ def index():
     # Join with class_type to get type info if needed, usually needed for display
     res = supabase.table('my_classes').select('*, class_type:class_types(*)').execute()
     classes = SupabaseModel.from_list(res.data)
+    
+    # Fix date formatting
+    for c in classes:
+        if c.created_at and isinstance(c.created_at, str):
+            try:
+                c.created_at = datetime.fromisoformat(c.created_at.replace('Z', '+00:00'))
+            except: pass
+
     return render_template('classes/index.html', classes=classes)
 
 

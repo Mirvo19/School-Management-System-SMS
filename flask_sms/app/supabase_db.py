@@ -1,17 +1,42 @@
 import os
 from supabase import create_client, Client
 
-url: str = os.environ.get("SUPABASE_URL", "").strip()
+# Fetch and clean environment variables
+url_raw = os.environ.get("SUPABASE_URL", "")
+url: str = url_raw.strip().strip("'").strip('"')
+
 # Prefer ANON key, fallback to generic KEY
 key_raw = os.environ.get("SUPABASE_ANON_KEY") or os.environ.get("SUPABASE_KEY")
-key: str = key_raw.strip() if key_raw else None
+key: str = key_raw.strip().strip("'").strip('"') if key_raw else None
 
 if not url:
-    print("WARNING: SUPABASE_URL not found in environment variables (supabase_db.py)")
-if not key:
-    print("WARNING: SUPABASE_KEY/SUPABASE_ANON_KEY not found in environment variables (supabase_db.py)")
+    print("WARNING: SUPABASE_URL not found or empty (supabase_db.py)")
 else:
-    print(f"Supabase Client init using key starting with: {key[:5]}...")
+    # Log valid URL format for debugging
+    print(f"Supabase Client init using URL: {url} (Length: {len(url)})")
+    if "postgres://" in url or "postgresql://" in url:
+        print("CRITICAL ERROR: SUPABASE_URL looks like a database connection string, not an API URL!")
+        print("Please use the 'Project URL' from Supabase Settings -> API (e.g., https://xyz.supabase.co)")
+
+if not key:
+    print("WARNING: SUPABASE_KEY/SUPABASE_ANON_KEY not found or empty (supabase_db.py)")
+else:
+    print(f"Supabase Client init using key starting with: {key[:10]}... (Length: {len(key)})")
+    
+    # Diagnostic: Check if key looks like a JWT (starts with 'ey')
+    if not key.startswith("ey"):
+        print(f"CRITICAL WARNING: The Supabase Key does NOT start with 'ey'.")
+        print("Did you paste the 'JWT Secret' instead of the 'anon'/'service_role' key?")
+    elif key.count('.') != 2:
+        print(f"CRITICAL WARNING: The Supabase Key seems malformed.")
+        print(f"It contains {key.count('.')} dots ('.') instead of 2. A valid JWT must have 3 parts separated by dots.")
+        print("Your key is likely TRUNCATED (cut off). Please copy the full key again.")
+    elif len(key) < 150:
+        print(f"WARNING: The Supabase Key length ({len(key)}) seems suspiciously short for a JWT.")
+        print("Please double check that you copied the ENTIRE key.")
+        print("Or maybe check for accidentally pasted variables?")
+    else:
+        print(f"Supabase Client init using key starting with: {key[:5]}...")
 
 # Initialize client only if env vars exist (to avoid circular import errors during setup)
 supabase: Client = create_client(url, key) if url and key else None

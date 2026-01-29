@@ -3,7 +3,7 @@ Authentication routes - Login, Logout, Register
 """
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
-# from app.models import User, db
+from app.models import User
 from app.supabase_db import get_db, SupabaseModel
 from werkzeug.security import check_password_hash, generate_password_hash
 from app.forms.auth_forms import LoginForm, RegisterForm, ChangePasswordForm
@@ -39,13 +39,14 @@ def login():
                 response = supabase.table('users').select('*').eq('username', identity).execute()
                 data = response.data
         except Exception as e:
+            print(f"LOGIN ERROR: {str(e)}")
             flash(f"System Error: Cannot connect to authentication service. ({str(e)})", 'danger')
             return render_template('auth/login.html', form=form)
 
         if data:
             user_data = data[0] # Get first result
             if check_password_hash(user_data['password'], form.password.data):
-                user_obj = SupabaseModel(user_data)
+                user_obj = User(user_data)
                 login_user(user_obj, remember=form.remember_me.data)
                 
                 next_page = request.args.get('next')
